@@ -1,11 +1,16 @@
---!strict
+local GetService = setmetatable({}, {
+	__index = function(s, n)
+		s[n] = game:GetService(n)
+		return s[n]
+	end
+})
 
-local Event: RemoteEvent = game:GetService("ReplicatedStorage").Events.RemoteEvent
+local Event = GetService.ReplicatedStorage.Events.RemoteEvent
 
-local o; o = hookmetamethod(game, "__namecall", newcclosure(function(...: any): ...any
-	local a: {any} = {...}
+local o; o = hookmetamethod(game, "__namecall", newcclosure(function(...)
+	local a = {...}
 	if not checkcaller() and a[1] == Event and getnamecallmethod() == "FireServer" then
-		for i: number = 2, #a do
+		for i = 2, #a do
 			if type(a[i]) == "table" and rawget(a[i], "ClassName") then
 				return
 			end
@@ -14,10 +19,10 @@ local o; o = hookmetamethod(game, "__namecall", newcclosure(function(...: any): 
 	return o(...)
 end))
 
-local o2; o2 = hookfunction(Event.FireServer, newcclosure(function(...: any): ...any
-	local a: {any} = {...}
+local o2; o2 = hookfunction(Event.FireServer, newcclosure(function(...)
+	local a = {...}
 	if not checkcaller() and a[1] == Event then
-		for i: number = 2, #a do
+		for i = 2, #a do
 			if type(a[i]) == "table" and rawget(a[i], "ClassName") then
 				return
 			end
@@ -28,26 +33,16 @@ end))
 
 warn("im s- i will say it but lemme listen for ac first.")
 
-local ACFunctions: {[any]: boolean} = {}
-
-for i: number, v: any in getgc(false) do
+for i, v in getgc(false) do
 	if type(v) == "function" and islclosure(v) and not isexecutorclosure(v) then
-		local inf: {[string]: any} = debug.getinfo(v)
-		if inf.source and inf.source:find("BClient") then
-			local c: {any}? = nil
-			pcall(function(): ()
-				c = debug.getconstants(v)
-			end)
-			
-			if c then
-				for j: number, con: any in c do
-					if type(con) == "string" and con == "ACTrigger" then
-						ACFunctions[v] = true
-						local og = v
-						hookfunction(v, newcclosure(function(...: any): ...any
-							warn("loll blocked the ac func ez, im tuff right?")
-							return
-						end))
+		local Success, Constants = pcall(debug.getconstants, v)
+		
+		if Success and Constants then
+			for j, Constant in Constants do
+				if type(Constant) == "string" and Constant == "ACTrigger" then
+					local Info = debug.getinfo(v)
+					if Info.source and Info.source:find("BClient") then
+						pcall(debug.setconstant, v, j, "lol who made this ac ima cry")
 						break
 					end
 				end
@@ -56,4 +51,4 @@ for i: number, v: any in getgc(false) do
 	end
 end
 
-warn("wait a second am i- su- superman?")
+warn("ok")
